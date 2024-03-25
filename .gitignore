@@ -115,8 +115,6 @@ dmypy.json
 
 *.zip
 index.html
-ServerList.csv
-ServerList1.csv
 *n2n_client*.exe
 .idea/
 Ver/server.ini
