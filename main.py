@@ -2,7 +2,7 @@ import os
 import subprocess
 import time
 
-N2NEXE = "win\\edge.exe"
+N2NEXE = "N2N\\edge.exe"
 groupName = "GDJAY1"
 serverAddress = "52.192.105.70:3000"
 localAddress = "192.168.5.1"
