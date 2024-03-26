@@ -1,0 +1,14 @@
+{
+    "profile": {
+        "server": "0",
+        "group_name": "GDJAY1",
+        "local_ip": "192.168.5.1"
+    },
+    "servers": [
+        {
+            "id": "0",
+            "name": "Japan - Tokyo",
+            "address": "52.192.105.70:3000"
+        }
+    ]
+}

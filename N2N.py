@@ -1,9 +1,7 @@
-import io
 import os
 import signal
 import subprocess
 import threading
-import time
 
 
 def _decode(info: bytes):
@@ -18,12 +16,13 @@ def _decode(info: bytes):
 
 
 class N2N(threading.Thread):
-    # n2n edge.exe相关参数
+    # n2n edge.exe相关对象
     _N2NPID: int
     _N2NEXE: str = "N2N/edge.exe"
     _groupName: str
     _serverAddr: str
     _localIP: str
+    _history: str
 
     # 同步线程控制
     _listeningCon: threading.Condition
@@ -35,8 +34,12 @@ class N2N(threading.Thread):
 
     def __init__(self):
         threading.Thread.__init__(self)
+        self._groupName = ""
+        self._serverAddr = ""
+        self._localIP = ""
         self._N2NPID = 0
         self._pipe = None
+        self._history = ""
 
         self._listeningCon = threading.Condition()
         self._historyLock = threading.Lock()
@@ -59,7 +62,7 @@ class N2N(threading.Thread):
         self.isAlive = False
         self._knock()
 
-    def tryConnect(self):
+    def tryConnect(self) -> bool:
         if self._isConnecting:
             return True
         else:
@@ -79,7 +82,7 @@ class N2N(threading.Thread):
             self._knock()
             return True
 
-    def tryConnect_autoIP(self):
+    def tryConnect_autoIP(self) -> bool:
         if self._isConnecting:
             return True
         else:
@@ -104,6 +107,14 @@ class N2N(threading.Thread):
             self._isConnecting = False
             self._killN2N()
             self._pipe = None
+
+    def writeHistory(self, msg: str):
+        with self._historyLock:
+            self._history += msg
+
+    def getHistory(self) -> str:
+        with self._historyLock:
+            return self._history
 
     def run(self):
         self._listeningCon.acquire()
