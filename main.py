@@ -1,40 +1,44 @@
+import ctypes
 import os
-import subprocess
+import sys
 import time
+
+import N2N
 
 N2NEXE = "N2N\\edge.exe"
 groupName = "GDJAY1"
 serverAddress = "52.192.105.70:3000"
-localAddress = "192.168.5.1"
+localAddress = "192.168.5.2"
+
+
+def _isAdmin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
 
 if __name__ == '__main__':
+
+    # 获取管理员权限
+    if not _isAdmin():
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+        exit(0)
+
     print("hello world")
-    ret = subprocess.Popen(f"{N2NEXE} -c {groupName} -a {localAddress} -l {serverAddress}",
-    stdout = subprocess.PIPE,stdin = subprocess.PIPE,stderr = subprocess.PIPE)
+    N2N_obj = N2N.N2N()
+    N2N_obj.setConfig(serverAddress, groupName, localAddress)
+    N2N_obj.start()
+    N2N_obj.tryConnect()
 
     time.sleep(3)
-    print("here")
+    input("tap to disconnect")
+    N2N_obj.disConnect()
+    input("tap to connect")
+    N2N_obj.tryConnect_autoIP()
+    input("tap to disconnect")
+    N2N_obj.disConnect()
 
-    # handle = msvcrt.get_osfhandle(ret.stdout.fileno())
-    # read, avail_count, msg = _winapi.PeekNamedPipe(handle, 0)
-    # while avail_count > 0:
-    #     data , errcode = _winapi.ReadFile(handle, avail_count)
-    #     print(data)
-
-    # info = ret.stdout.read(2).decode("utf8")
-    # while info!="":
-    #     print(info,end="")
-    #     info = ret.stdout.read(2)
-    #     if info is None:
-    #         break
-    #     else:
-    #         info = info.decode("utf8")
-
+    input("tap to stop")
+    N2N_obj.stop()
     os.system("pause")
-    os.system(f"taskkill /f /pid {ret.pid}")
-
-
-    # while True:
-    #     info = ret.read(2)
-    #     if info != "":
-    #         print(info,end="")
