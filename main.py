@@ -1,7 +1,9 @@
 import ctypes
+import os
 import sys
 
 import configtool
+import trayicon
 
 
 def _isAdmin():
@@ -21,6 +23,11 @@ if __name__ == '__main__':
     errCode, jsonObj = configObj.readSettings()
     print(jsonObj)
     configObj.saveSettings(jsonObj)
+
+    trayiconObj = trayicon.trayicon()
+    trayiconObj.create_tray_icon()
+
+    os.system("pause")
 
     # print("hello world")
     # N2N_obj = N2N.N2N()
