@@ -1,33 +1,39 @@
 import ctypes
 import os
 import sys
+import time
+
+from PyQt5.QtWidgets import QMainWindow, QApplication, QTabWidget, QWidget
 
 import configtool
+import main_window
 import trayicon
 
-
-def _isAdmin():
-    try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
-        return False
 
 
 if __name__ == '__main__':
     # 获取管理员权限
-    if not _isAdmin():
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
-        exit(0)
+    # if not _isAdmin():
+    #     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, "", None, 1)
+    #     exit(0)
 
-    configObj = configtool.configTool()
-    errCode, jsonObj = configObj.readSettings()
-    print(jsonObj)
-    configObj.saveSettings(jsonObj)
+    app = QApplication(sys.argv)
 
-    trayiconObj = trayicon.trayicon()
-    trayiconObj.create_tray_icon()
+    mainWindow = QTabWidget()
+    uiMainWindow = main_window.Ui_TabWidget()
+    uiMainWindow.setupUi(mainWindow)
+    mainWindow.show()
+    sys.exit(app.exec_())
 
-    os.system("pause")
+    # configObj = configtool.configTool()
+    # errCode, jsonObj = configObj.readSettings()
+    # print(jsonObj)
+    # configObj.saveSettings(jsonObj)
+    #
+    # trayiconObj = trayicon.trayicon()
+    # trayiconObj.create_tray_icon()
+    #
+    # os.system("pause")
 
     # print("hello world")
     # N2N_obj = N2N.N2N()
