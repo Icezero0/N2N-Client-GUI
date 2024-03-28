@@ -1,4 +1,3 @@
-import ctypes
 import os
 import sys
 import time
@@ -6,23 +5,35 @@ import time
 from PyQt5.QtWidgets import QMainWindow, QApplication, QTabWidget, QWidget
 
 import configtool
-import main_window
-import trayicon
+import UI
+import TrayIcon
 
+
+class MainWindow(QTabWidget):
+    def __init__(self):
+        QTabWidget.__init__(self)
+
+    def closeEvent(self, event):
+        self.setVisible(False)
+        event.ignore()
 
 
 if __name__ == '__main__':
-    # 获取管理员权限
-    # if not _isAdmin():
-    #     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, "", None, 1)
-    #     exit(0)
 
     app = QApplication(sys.argv)
+    QApplication.setQuitOnLastWindowClosed(False)
 
-    mainWindow = QTabWidget()
-    uiMainWindow = main_window.Ui_TabWidget()
-    uiMainWindow.setupUi(mainWindow)
+    mainWindow = MainWindow()
+
+    ui = UI.UI(mainWindow)
+    ui.setup()
+
+    trayIcon = TrayIcon.TrayIcon(mainWindow)
+    trayIcon.setupHandle()
+
+
     mainWindow.show()
+
     sys.exit(app.exec_())
 
     # configObj = configtool.configTool()
@@ -30,8 +41,6 @@ if __name__ == '__main__':
     # print(jsonObj)
     # configObj.saveSettings(jsonObj)
     #
-    # trayiconObj = trayicon.trayicon()
-    # trayiconObj.create_tray_icon()
     #
     # os.system("pause")
 
