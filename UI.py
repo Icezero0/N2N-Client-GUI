@@ -1,171 +1,268 @@
+import re
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QTabWidget
 
+from configtool import ConfigTool
+
 
 class UI(object):
-    TabWidget: QTabWidget
+    _tabWidget: QTabWidget
+    _configTool: ConfigTool
+    _serverList: list
+    _serverSelected: int
+    _groupName: str
+    _localIP: str
+    _autoIP: str
 
     def __init__(self, TabWidget):
         # self.trayIcon = None
-        self.TabWidget = TabWidget
+        self._tabWidget = TabWidget
 
     def setup(self):
-        self.setupUi()
-        # self.setupTrayIcon()
-        self.setEventsHandle()
+        self._setupUi()
+        self._setEventsHandle()
 
-    def setupUi(self):
-        self.TabWidget.setObjectName("TabWidget")
-        self.TabWidget.setWindowIcon(QtGui.QIcon("icon/icon.png"))
-        self.TabWidget.resize(415, 440)
-        self.TabWidget.setFixedSize(415, 440)
-        self.TabWidget.setTabPosition(QtWidgets.QTabWidget.North)
-        self.TabWidget.setTabShape(QtWidgets.QTabWidget.Rounded)
-        self.TabWidget.setIconSize(QtCore.QSize(16, 16))
-        self.TabWidget.setTabsClosable(False)
-        self.TabWidget.setTabBarAutoHide(False)
-        self.mainTab = QtWidgets.QWidget()
-        self.mainTab.setObjectName("mainTab")
-        self.serverFrame = QtWidgets.QFrame(self.mainTab)
-        self.serverFrame.setGeometry(QtCore.QRect(10, 0, 390, 80))
-        self.serverFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.serverFrame.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.serverFrame.setLineWidth(1)
-        self.serverFrame.setMidLineWidth(0)
-        self.serverFrame.setObjectName("serverFrame")
-        self.serverAddressLabel = QtWidgets.QLabel(self.serverFrame)
-        self.serverAddressLabel.setGeometry(QtCore.QRect(90, 40, 290, 30))
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.serverAddressLabel.setFont(font)
-        self.serverAddressLabel.setTextFormat(QtCore.Qt.AutoText)
-        self.serverAddressLabel.setObjectName("serverAddressLabel")
-        self.serverSelectComboBox = QtWidgets.QComboBox(self.serverFrame)
-        self.serverSelectComboBox.setGeometry(QtCore.QRect(90, 10, 200, 20))
-        self.serverSelectComboBox.setObjectName("serverSelectComboBox")
-        self.serverSelectComboBox.addItem("")
-        self.serverTitleLabel = QtWidgets.QLabel(self.serverFrame)
-        self.serverTitleLabel.setGeometry(QtCore.QRect(10, 10, 70, 30))
-        self.serverTitleLabel.setObjectName("serverTitleLabel")
-        self.serverManagePushButton = QtWidgets.QPushButton(self.serverFrame)
-        self.serverManagePushButton.setGeometry(QtCore.QRect(300, 10, 80, 20))
-        self.serverManagePushButton.setObjectName("serverManagePushButton")
-        self.groupNameFrame = QtWidgets.QFrame(self.mainTab)
-        self.groupNameFrame.setGeometry(QtCore.QRect(10, 90, 390, 50))
-        self.groupNameFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.groupNameFrame.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.groupNameFrame.setObjectName("groupNameFrame")
-        self.groupnameTitleLabel = QtWidgets.QLabel(self.groupNameFrame)
-        self.groupnameTitleLabel.setGeometry(QtCore.QRect(10, 10, 60, 30))
-        self.groupnameTitleLabel.setObjectName("groupnameTitleLabel")
-        self.groupnameLineEdit = QtWidgets.QLineEdit(self.groupNameFrame)
-        self.groupnameLineEdit.setGeometry(QtCore.QRect(90, 10, 280, 30))
-        self.groupnameLineEdit.setObjectName("groupnameLineEdit")
-        self.localipFrame = QtWidgets.QFrame(self.mainTab)
-        self.localipFrame.setGeometry(QtCore.QRect(10, 150, 390, 50))
-        self.localipFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.localipFrame.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.localipFrame.setObjectName("localipFrame")
-        self.localipTitleLabel = QtWidgets.QLabel(self.localipFrame)
-        self.localipTitleLabel.setGeometry(QtCore.QRect(10, 10, 60, 30))
-        self.localipTitleLabel.setObjectName("localipTitleLabel")
-        self.localipLineEdit = QtWidgets.QLineEdit(self.localipFrame)
-        self.localipLineEdit.setGeometry(QtCore.QRect(90, 10, 150, 30))
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.localipLineEdit.setFont(font)
-        self.localipLineEdit.setObjectName("localipLineEdit")
-        self.localipAutoCheckBox = QtWidgets.QCheckBox(self.localipFrame)
-        self.localipAutoCheckBox.setGeometry(QtCore.QRect(280, 10, 80, 30))
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.localipAutoCheckBox.setFont(font)
-        self.localipAutoCheckBox.setObjectName("localipAutoCheckBox")
-        self.connectionFrame = QtWidgets.QFrame(self.mainTab)
-        self.connectionFrame.setGeometry(QtCore.QRect(10, 210, 390, 200))
-        self.connectionFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.connectionFrame.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.connectionFrame.setObjectName("connectionFrame")
-        self.connectionPushButton = QtWidgets.QPushButton(self.connectionFrame)
-        self.connectionPushButton.setGeometry(QtCore.QRect(310, 160, 75, 30))
-        self.connectionPushButton.setObjectName("connectionPushButton")
-        self.connectionMsgTextBrowser = QtWidgets.QTextBrowser(self.connectionFrame)
-        self.connectionMsgTextBrowser.setGeometry(QtCore.QRect(10, 10, 370, 140))
-        font = QtGui.QFont()
-        font.setFamily("微软雅黑")
-        font.setPointSize(10)
-        font.setBold(False)
-        font.setWeight(50)
-        self.connectionMsgTextBrowser.setFont(font)
-        self.connectionMsgTextBrowser.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.IBeamCursor))
-        self.connectionMsgTextBrowser.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.connectionMsgTextBrowser.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.connectionMsgTextBrowser.setLineWidth(1)
-        self.connectionMsgTextBrowser.setObjectName("connectionMsgTextBrowser")
-        self.TabWidget.addTab(self.mainTab, "")
+    def _setupUi(self):
+        self._tabWidget.setObjectName("TabWidget")
+        self._tabWidget.setWindowIcon(QtGui.QIcon("icon/icon.png"))
+        self._tabWidget.resize(415, 450)
+        self._tabWidget.setFixedSize(415, 450)
+        self._tabWidget.setTabPosition(QtWidgets.QTabWidget.North)
+        self._tabWidget.setTabShape(QtWidgets.QTabWidget.Rounded)
+        self._tabWidget.setIconSize(QtCore.QSize(16, 16))
+        self._tabWidget.setTabsClosable(False)
+        self._tabWidget.setTabBarAutoHide(False)
+        self._mainTab = QtWidgets.QWidget()
+        self._mainTab.setObjectName("mainTab")
+        self._serverFrame = QtWidgets.QFrame(self._mainTab)
+        self._serverFrame.setGeometry(QtCore.QRect(10, 10, 390, 80))
+        self._serverFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self._serverFrame.setFrameShadow(QtWidgets.QFrame.Plain)
+        self._serverFrame.setLineWidth(1)
+        self._serverFrame.setMidLineWidth(0)
+        self._serverFrame.setObjectName("serverFrame")
+        self._serverAddressLabel = QtWidgets.QLabel(self._serverFrame)
+        self._serverAddressLabel.setGeometry(QtCore.QRect(90, 40, 290, 30))
+        _font = QtGui.QFont()
+        _font.setPointSize(10)
+        self._serverAddressLabel.setFont(_font)
+        self._serverAddressLabel.setTextFormat(QtCore.Qt.AutoText)
+        self._serverAddressLabel.setObjectName("serverAddressLabel")
+        self._serverSelectComboBox = QtWidgets.QComboBox(self._serverFrame)
+        self._serverSelectComboBox.setGeometry(QtCore.QRect(90, 10, 200, 20))
+        self._serverSelectComboBox.setObjectName("serverSelectComboBox")
+        self._serverTitleLabel = QtWidgets.QLabel(self._serverFrame)
+        self._serverTitleLabel.setGeometry(QtCore.QRect(10, 10, 70, 30))
+        self._serverTitleLabel.setObjectName("serverTitleLabel")
+        self._serverManagePushButton = QtWidgets.QPushButton(self._serverFrame)
+        self._serverManagePushButton.setGeometry(QtCore.QRect(300, 10, 80, 20))
+        self._serverManagePushButton.setObjectName("serverManagePushButton")
+        self._groupNameFrame = QtWidgets.QFrame(self._mainTab)
+        self._groupNameFrame.setGeometry(QtCore.QRect(10, 100, 390, 50))
+        self._groupNameFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self._groupNameFrame.setFrameShadow(QtWidgets.QFrame.Plain)
+        self._groupNameFrame.setObjectName("groupNameFrame")
+        self._groupNameTitleLabel = QtWidgets.QLabel(self._groupNameFrame)
+        self._groupNameTitleLabel.setGeometry(QtCore.QRect(10, 10, 60, 30))
+        self._groupNameTitleLabel.setObjectName("groupNameTitleLabel")
+        self._groupNameLineEdit = QtWidgets.QLineEdit(self._groupNameFrame)
+        self._groupNameLineEdit.setGeometry(QtCore.QRect(90, 10, 280, 30))
+        self._groupNameLineEdit.setObjectName("groupNameLineEdit")
+        self._localipFrame = QtWidgets.QFrame(self._mainTab)
+        self._localipFrame.setGeometry(QtCore.QRect(10, 160, 390, 50))
+        self._localipFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self._localipFrame.setFrameShadow(QtWidgets.QFrame.Plain)
+        self._localipFrame.setObjectName("localipFrame")
+        self._localipTitleLabel = QtWidgets.QLabel(self._localipFrame)
+        self._localipTitleLabel.setGeometry(QtCore.QRect(10, 10, 60, 30))
+        self._localipTitleLabel.setObjectName("localipTitleLabel")
+        self._localipLineEdit = QtWidgets.QLineEdit(self._localipFrame)
+        self._localipLineEdit.setGeometry(QtCore.QRect(90, 10, 150, 30))
+        _font = QtGui.QFont()
+        _font.setPointSize(10)
+        self._localipLineEdit.setFont(_font)
+        self._localipLineEdit.setObjectName("localipLineEdit")
+        self._localipAutoCheckBox = QtWidgets.QCheckBox(self._localipFrame)
+        self._localipAutoCheckBox.setGeometry(QtCore.QRect(280, 10, 80, 30))
+        _font = QtGui.QFont()
+        _font.setPointSize(10)
+        self._localipAutoCheckBox.setFont(_font)
+        self._localipAutoCheckBox.setObjectName("localipAutoCheckBox")
+        self._connectionFrame = QtWidgets.QFrame(self._mainTab)
+        self._connectionFrame.setGeometry(QtCore.QRect(10, 220, 390, 200))
+        self._connectionFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self._connectionFrame.setFrameShadow(QtWidgets.QFrame.Plain)
+        self._connectionFrame.setObjectName("connectionFrame")
+        self._connectionPushButton = QtWidgets.QPushButton(self._connectionFrame)
+        self._connectionPushButton.setGeometry(QtCore.QRect(310, 160, 75, 30))
+        self._connectionPushButton.setObjectName("connectionPushButton")
+        self._connectionMsgTextBrowser = QtWidgets.QTextBrowser(self._connectionFrame)
+        self._connectionMsgTextBrowser.setGeometry(QtCore.QRect(10, 10, 370, 140))
+        _font = QtGui.QFont()
+        _font.setFamily("Microsoft YaHei")
+        _font.setPointSize(9)
+        _font.setBold(False)
+        _font.setWeight(50)
+        self._connectionMsgTextBrowser.setFont(_font)
+        self._connectionMsgTextBrowser.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.IBeamCursor))
+        self._connectionMsgTextBrowser.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self._connectionMsgTextBrowser.setFrameShadow(QtWidgets.QFrame.Plain)
+        self._connectionMsgTextBrowser.setLineWidth(1)
+        self._connectionMsgTextBrowser.setObjectName("connectionMsgTextBrowser")
+        self._tabWidget.addTab(self._mainTab, "")
 
-        self.retranslateUi(self.TabWidget)
-        self.TabWidget.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(self.TabWidget)
+        self._retranslateUi(self._tabWidget)
+        self._tabWidget.setCurrentIndex(0)
+        QtCore.QMetaObject.connectSlotsByName(self._tabWidget)
 
-    # def setupTrayIcon(self):
-        # self.trayIcon = TrayIcon.TrayIcon(self.TabWidget)
-
-    def retranslateUi(self, TabWidget):
+    def _retranslateUi(self, _TabWidget):
         _translate = QtCore.QCoreApplication.translate
-        TabWidget.setWindowTitle(_translate("TabWidget", "N2N"))
-        self.serverAddressLabel.setText(_translate("TabWidget", "52.192.105.70:3000"))
-        self.serverSelectComboBox.setItemText(0, _translate("TabWidget", "节点 1 : 日本 - 东京"))
-        self.serverTitleLabel.setText(_translate("TabWidget", "服务器节点"))
-        self.serverManagePushButton.setText(_translate("TabWidget", "管理节点"))
-        self.groupnameTitleLabel.setText(_translate("TabWidget", "群组名"))
-        self.groupnameLineEdit.setText(_translate("TabWidget", "GDJAY1"))
-        self.localipTitleLabel.setText(_translate("TabWidget", "本机地址"))
-        self.localipLineEdit.setInputMask(_translate("TabWidget", "000. 000. 000. 000;_"))
-        self.localipLineEdit.setText(_translate("TabWidget", ". . . "))
-        self.localipAutoCheckBox.setText(_translate("TabWidget", "自动分配"))
-        self.connectionPushButton.setText(_translate("TabWidget", "连接"))
-        TabWidget.setTabText(TabWidget.indexOf(self.mainTab), _translate("TabWidget", "主页"))
+        _TabWidget.setWindowTitle(_translate("TabWidget", "N2N"))
+        self._serverAddressLabel.setText(_translate("TabWidget", ""))
+        self._serverTitleLabel.setText(_translate("TabWidget", "服务器节点"))
+        self._serverManagePushButton.setText(_translate("TabWidget", "管理节点"))
+        self._groupNameTitleLabel.setText(_translate("TabWidget", "群组名"))
+        self._groupNameLineEdit.setText(_translate("TabWidget", ""))
+        self._localipTitleLabel.setText(_translate("TabWidget", "本机地址"))
+        self._localipLineEdit.setInputMask(_translate("TabWidget", "000. 000. 000. 000; "))
+        self._localipLineEdit.setText(_translate("TabWidget", ". . . "))
+        self._localipAutoCheckBox.setText(_translate("TabWidget", "自动分配"))
+        self._connectionPushButton.setText(_translate("TabWidget", "连接"))
+        _TabWidget.setTabText(_TabWidget.indexOf(self._mainTab), _translate("TabWidget", "主页"))
 
-    def setEventsHandle(self):
+    def _setEventsHandle(self):
         # set tab widget elements event handle
-        self.connectionPushButton.clicked.connect(self.handle_connectionPushButton_clicked)
+        self._serverSelectComboBox.currentIndexChanged.connect(self._handle_serverSelectComboBox_selected)
+        self._serverManagePushButton.clicked.connect(self._handle_serverManagePushButton_clicked)
+        self._groupNameLineEdit.textChanged.connect(self._handle_groupNameLineEdit_changed)
+        self._localipLineEdit.textChanged.connect(self._handle_localipLineEdit_changed)
+        self._localipAutoCheckBox.stateChanged.connect(self._handle_localipAutoCheckBox_changed)
+        self._connectionPushButton.clicked.connect(self._handle_connectionPushButton_clicked)
 
+    def setupConfig(self):
+        self._configTool = ConfigTool("settings.json")
+        self._serverList = {}
+        self._serverSelected = -1
+        self._groupName = ""
+        self._localIP = ""
+        self._autoIP = "No"
 
-    def Log_connectionTextBrowser(self, text: str, color: str = "black", margin_top: str = "2px", margin_bottom: str = "2px"):
+        rst, jsonobj = self._configTool.readSettings()
+        if rst == 0:
+            try:
+                if jsonobj["servers"] is not None:
+                    self._serverList = jsonobj["servers"]
+                profile = jsonobj["profile"]
+                id = profile["server_id"]
+                self._groupName = profile["group_name"]
+                self._localIP = profile["local_ip"]
+                auto_ip = profile["auto_ip"]
+                if re.match('^[a-zA-Z]+$', auto_ip):
+                    if auto_ip.lower() == "yes":
+                        self._autoIP = "Yes"
+                for server_pos in range(len(self._serverList)):
+                    server = self._serverList[server_pos]
+                    if server["id"] == id:
+                        self._serverSelected = server_pos
+                        break
+                if self._serverSelected == -1:
+                    self._serverSelected = 0
+
+                self.Log_connectionTextBrowser("[Info] : 读取配置文件成功。")
+            except Exception as e:
+                self.Log_connectionTextBrowser("[Error] : 读取配置文件失败，已加载初始化参数。", color="red")
+                self.Log_connectionTextBrowser(e.__str__(), color="red")
+                self._serverList = {}
+                self._serverSelected = None
+                self._groupName = ""
+                self._localIP = ""
+
+        elif rst == 1:
+            self.Log_connectionTextBrowser("[Error] : 读取配置文件失败，已加载初始化参数。", color="red")
+        elif rst == 2:
+            self.Log_connectionTextBrowser("[Error] : 读取配置文件失败，已加载初始化参数。", color="red")
+
+        self._uiFresh()
+
+    def Log_connectionTextBrowser(self, text: str, color: str = "black", margin_top: str = "0px",
+                                  margin_bottom: str = "0px"):
         _translate = QtCore.QCoreApplication.translate
-        self.connectionMsgTextBrowser.append(_translate("TabWidget",
-                                                        f"<p style=\""
-                                                        f"margin-top:\'{margin_top}\';"
-                                                        f"margin-bottom:\'{margin_bottom}\';"
-                                                        f"color:{color};"
-                                                        f"\">{text}</p>"))
+        self._connectionMsgTextBrowser.append(_translate("TabWidget",
+                                                         f"<p style=\""
+                                                         f"margin-top:\'{margin_top}\';"
+                                                         f"margin-bottom:\'{margin_bottom}\';"
+                                                         f"color:{color};"
+                                                         f"\">{text}</p>"))
 
-    def handle_connectionPushButton_clicked(self):
-        local_ip = self.localipLineEdit.text()
-        self.localipLineEdit.setReadOnly(not self.localipLineEdit.isReadOnly())
+    def _saveConfig(self):
+        jsonobj = {}
+        server_id = ""
+        if len(self._serverList) > 0:
+            server_id = self._serverList[self._serverSelected]["id"]
+        jsonobj["profile"] = {
+            "server_id": server_id,
+            "group_name": self._groupName,
+            "local_ip": self._localIP,
+            "auto_ip": self._autoIP
+        }
+        jsonobj["servers"] = self._serverList
+        self._configTool.saveSettings(jsonobj)
+
+    def _uiFresh(self):
+        server_name_list = []
+        for server in self._serverList:
+            server_name_list.append(server["name"])
+
+        # Clear the server select combobox
+        self._serverSelectComboBox.blockSignals(True)
+        while self._serverSelectComboBox.count() > 0:
+            self._serverSelectComboBox.removeItem(0)
+        self._serverSelectComboBox.addItems(server_name_list)
+        self._serverSelectComboBox.setCurrentIndex(self._serverSelected)
+        self._serverSelectComboBox.blockSignals(False)
+        if len(self._serverList) > 0:
+            server_address = self._serverList[self._serverSelected]["address"]
+        else:
+            server_address = ""
+        self._serverAddressLabel.setText(server_address)
+
+        self._groupNameLineEdit.setText(self._groupName)
+
+        self._localipLineEdit.setText(self._localIP)
+        self._localipAutoCheckBox.blockSignals(True)
+        if self._autoIP == "Yes":
+            self._localipLineEdit.setEnabled(False)
+            self._localipAutoCheckBox.setChecked(True)
+        elif self._autoIP == "No":
+            self._localipLineEdit.setEnabled(True)
+            self._localipAutoCheckBox.setChecked(False)
+        self._localipAutoCheckBox.blockSignals(False)
+
+        self._saveConfig()
+
+    def _handle_serverSelectComboBox_selected(self):
+        self._serverSelected = self._serverSelectComboBox.currentIndex()
+        self._uiFresh()
+
+    def _handle_serverManagePushButton_clicked(self):
+        pass
+
+    def _handle_groupNameLineEdit_changed(self):
+        self._groupName = self._groupNameLineEdit.text()
+
+    def _handle_localipLineEdit_changed(self):
+        self._localIP = self._localipLineEdit.text()
+
+    def _handle_localipAutoCheckBox_changed(self):
+        if self._autoIP == "Yes":
+            self._autoIP = "No"
+        elif self._autoIP == "No":
+            self._autoIP = "Yes"
+        self._uiFresh()
+
+    def _handle_connectionPushButton_clicked(self):
+        self._uiFresh()
+        local_ip = self._localipLineEdit.text()
+        self._localipLineEdit.setReadOnly(not self._localipLineEdit.isReadOnly())
         self.Log_connectionTextBrowser(local_ip)
-
-    # def handle_trayIcon_open(self):
-    #     self.TabWidget.setVisible(True)
-    #     self.TabWidget.activateWindow()
-
-    # def handle_trayIcon_exit(self):
-    #     QCoreApplication.quit()
-    #
-    # def handle_trayIcon_doConnect(self):
-    #     self.trayIcon.trayActions["doConnect"].setEnabled(False)
-    #     self.trayIcon.trayActions["disConnect"].setEnabled(True)
-    #
-    # def handle_trayIcon_disConnect(self):
-    #     self.trayIcon.trayActions["doConnect"].setEnabled(True)
-    #     self.trayIcon.trayActions["disConnect"].setEnabled(False)
-    #
-    # def handle_trayIcon_openSource(self):
-    #     os.system("start https://github.com/Icezero0/N2N-Client-GUI")
-    #
-    # def handle_trayIcon_activated(self, reason):
-    #     if reason == QSystemTrayIcon.Critical or reason == QSystemTrayIcon.MiddleClick or reason == QSystemTrayIcon.DoubleClick:
-    #         self.handle_trayIcon_open()
-    #     elif reason == QSystemTrayIcon.Context:
-    #         self.trayIcon.trayIcon.contextMenu().show()

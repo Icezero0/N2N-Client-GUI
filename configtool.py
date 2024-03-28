@@ -3,7 +3,7 @@ import os
 import traceback
 
 
-class configTool:
+class ConfigTool:
     _filePath: str
 
     def __init__(self, filePath="settings.json"):

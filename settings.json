@@ -1,14 +1,20 @@
 {
     "profile": {
-        "server": "0",
+        "server_id": "233",
         "group_name": "GDJAY1",
-        "local_ip": "192.168.5.1"
+        "local_ip": "192. 168. 5. 1",
+        "auto_ip": "Yes"
     },
     "servers": [
         {
             "id": "0",
             "name": "Japan - Tokyo",
             "address": "52.192.105.70:3000"
+        },
+        {
+            "id": "233",
+            "name": "China - Shanghai",
+            "address": "sh.n2n.nya-wsl.cn:7777"
         }
     ]
 }

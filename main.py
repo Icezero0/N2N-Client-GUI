@@ -29,7 +29,9 @@ if __name__ == '__main__':
     ui.setup()
 
     trayIcon = TrayIcon.TrayIcon(mainWindow)
-    trayIcon.setupHandle()
+    trayIcon.setup()
+
+    ui.setupConfig()
 
 
     mainWindow.show()
