@@ -121,3 +121,5 @@ Ver/server.ini
 n2n_client_linux
 test/
 N2N-Client-py/
+test.*
+main_window.ui

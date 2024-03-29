@@ -28,10 +28,8 @@ if __name__ == '__main__':
     ui = UI.UI(mainWindow)
     ui.setup()
 
-    trayIcon = TrayIcon.TrayIcon(mainWindow)
+    trayIcon = TrayIcon.TrayIcon(mainWindow, ui)
     trayIcon.setup()
-
-    ui.setupConfig()
 
 
     mainWindow.show()

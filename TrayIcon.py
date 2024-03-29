@@ -15,12 +15,15 @@ class TrayIcon:
     _trayMenu: QMenu
     trayIcon: QSystemTrayIcon
 
-    def __init__(self, mainWindow):
+    _ui: UI.UI
+
+    def __init__(self, mainWindow, ui_main_tab):
         self._mainWindow = mainWindow
         self._iconPath = ["icon/tray_icon.png", r"D:\project\python\N2N-Client-GUI\icon/tray_icon.png"]
         self._iconImage = QIcon()
         self._trayActions = {}
         self._trayMenu = None
+        self._ui = ui_main_tab
 
     def setup(self):
         self._initTray()
@@ -89,6 +92,7 @@ class TrayIcon:
         self._mainWindow.activateWindow()
 
     def _handle_trayIcon_exit(self):
+        self._ui.save_config()
         QCoreApplication.quit()
 
     def _handle_trayIcon_doConnect(self):

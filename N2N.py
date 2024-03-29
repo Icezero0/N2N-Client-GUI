@@ -37,6 +37,7 @@ class N2N(threading.Thread):
         self._groupName = ""
         self._serverAddr = ""
         self._localIP = ""
+        self._autoIP = False
         self._N2NPID = 0
         self._pipe = None
         self._history = ""
@@ -47,10 +48,11 @@ class N2N(threading.Thread):
         self._isConnecting = False
         self.isAlive = False
 
-    def setConfig(self, serverAddr: str, groupName: str, localIP: str):
+    def setConfig(self, serverAddr: str, groupName: str, localIP: str, autoIP: bool):
         self._groupName = groupName
         self._serverAddr = serverAddr
         self._localIP = localIP
+        self._autoIP = autoIP
 
     def start(self):
         self.isAlive = True
@@ -82,39 +84,21 @@ class N2N(threading.Thread):
             self._knock()
             return True
 
-    def tryConnect_autoIP(self) -> bool:
-        if self._isConnecting:
-            return True
-        else:
-            try:
-                self._pipe = subprocess.Popen(
-                    f"{self._N2NEXE} -c {self._groupName} -l {self._serverAddr}",
-                    stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE
-                )
-                self._N2NPID = self._pipe.pid
-            except Exception as e:
-                # traceback.print_exc(e)
-                self._pipe = None
-                self._N2NPID = 0
-                return False
-
-            self._isConnecting = True
-            self._knock()
-            return True
-
     def disConnect(self):
         if self._isConnecting:
             self._isConnecting = False
             self._killN2N()
             self._pipe = None
 
-    def writeHistory(self, msg: str):
+    def _writeHistory(self, msg: str):
         with self._historyLock:
             self._history += msg
 
     def getHistory(self) -> str:
         with self._historyLock:
-            return self._history
+            ret = self._history
+            self._history = ""
+        return ret
 
     def run(self):
         self._listeningCon.acquire()
@@ -132,10 +116,10 @@ class N2N(threading.Thread):
                     # traceback.print_exc(e)
                     break
                 print(msg, end="")
+                self._writeHistory(msg)
 
             if self.isAlive:
-                self._listeningCon.wait(2)
-            print("child check")
+                self._listeningCon.wait(10)
 
         self._listeningCon.release()
 

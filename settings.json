@@ -1,9 +1,9 @@
 {
     "profile": {
-        "server_id": "233",
+        "server_id": "1",
         "group_name": "GDJAY1",
         "local_ip": "192. 168. 5. 1",
-        "auto_ip": "Yes"
+        "auto_ip": "No"
     },
     "servers": [
         {
@@ -12,8 +12,8 @@
             "address": "52.192.105.70:3000"
         },
         {
-            "id": "233",
-            "name": "China - Shanghai",
+            "id": "1",
+            "name": "Korea - Seoul",
             "address": "sh.n2n.nya-wsl.cn:7777"
         }
     ]

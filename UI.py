@@ -1,13 +1,12 @@
 import re
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QTabWidget
 
 from configtool import ConfigTool
 
 
 class UI(object):
-    _tabWidget: QTabWidget
+    _tabWidget: QtWidgets.QTabWidget
     _configTool: ConfigTool
     _serverList: list
     _serverSelected: int
@@ -22,6 +21,7 @@ class UI(object):
     def setup(self):
         self._setupUi()
         self._setEventsHandle()
+        self._setupConfig()
 
     def _setupUi(self):
         self._tabWidget.setObjectName("TabWidget")
@@ -82,6 +82,7 @@ class UI(object):
         _font = QtGui.QFont()
         _font.setPointSize(10)
         self._localipLineEdit.setFont(_font)
+        self._localipLineEdit.setTextMargins(10, 8, 8, 10)
         self._localipLineEdit.setObjectName("localipLineEdit")
         self._localipAutoCheckBox = QtWidgets.QCheckBox(self._localipFrame)
         self._localipAutoCheckBox.setGeometry(QtCore.QRect(280, 10, 80, 30))
@@ -112,6 +113,44 @@ class UI(object):
         self._connectionMsgTextBrowser.setObjectName("connectionMsgTextBrowser")
         self._tabWidget.addTab(self._mainTab, "")
 
+        # server_list_tab
+        self._serverTableTab = QtWidgets.QWidget()
+        self._serverTableTab.setObjectName("serverTableTab")
+        self._serverTableFrame = QtWidgets.QFrame(self._serverTableTab)
+        self._serverTableFrame.setGeometry(QtCore.QRect(10, 10, 390, 350))
+        self._serverTableFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self._serverTableFrame.setFrameShadow(QtWidgets.QFrame.Plain)
+        self._serverTableFrame.setLineWidth(1)
+        self._serverTableFrame.setMidLineWidth(0)
+        self._serverTableFrame.setObjectName("serverTableFrame")
+        self._serverTableView = QtWidgets.QTableView(self._serverTableFrame)
+        self._serverTableView.setObjectName("serverTableView")
+        self._serverTableView.horizontalHeader().setStretchLastSection(True)
+        self._verticalLayout = QtWidgets.QVBoxLayout(self._serverTableFrame)
+        self._verticalLayout.setObjectName("verticalLayout")
+        self._verticalLayout.addWidget(self._serverTableView)
+        self._serverTableModel = QtGui.QStandardItemModel(0, 2)
+        self._serverTableView.setModel(self._serverTableModel)
+
+        self._manageButtonFrame = QtWidgets.QFrame(self._serverTableTab)
+        self._manageButtonFrame.setGeometry(QtCore.QRect(10, 370, 390, 50))
+        self._manageButtonFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self._manageButtonFrame.setFrameShadow(QtWidgets.QFrame.Plain)
+        self._manageButtonFrame.setLineWidth(1)
+        self._manageButtonFrame.setMidLineWidth(0)
+        self._manageButtonFrame.setObjectName("manageButtonFrame")
+        self._addServerButton = QtWidgets.QPushButton(self._manageButtonFrame)
+        self._addServerButton.setGeometry(QtCore.QRect(10, 10, 75, 30))
+        self._addServerButton.setObjectName("addServerButton")
+        self._delServerButton = QtWidgets.QPushButton(self._manageButtonFrame)
+        self._delServerButton.setGeometry(QtCore.QRect(95, 10, 75, 30))
+        self._delServerButton.setObjectName("delServerButton")
+        self._delServerButton.setStyleSheet("color:red")
+        self._useServerButton = QtWidgets.QPushButton(self._manageButtonFrame)
+        self._useServerButton.setGeometry(QtCore.QRect(305, 10, 75, 30))
+        self._useServerButton.setObjectName("useServerButton")
+        self._tabWidget.addTab(self._serverTableTab, "")
+
         self._retranslateUi(self._tabWidget)
         self._tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(self._tabWidget)
@@ -121,7 +160,7 @@ class UI(object):
         _TabWidget.setWindowTitle(_translate("TabWidget", "N2N"))
         self._serverAddressLabel.setText(_translate("TabWidget", ""))
         self._serverTitleLabel.setText(_translate("TabWidget", "服务器节点"))
-        self._serverManagePushButton.setText(_translate("TabWidget", "管理节点"))
+        self._serverManagePushButton.setText(_translate("TabWidget", "连接测试"))
         self._groupNameTitleLabel.setText(_translate("TabWidget", "群组名"))
         self._groupNameLineEdit.setText(_translate("TabWidget", ""))
         self._localipTitleLabel.setText(_translate("TabWidget", "本机地址"))
@@ -131,8 +170,15 @@ class UI(object):
         self._connectionPushButton.setText(_translate("TabWidget", "连接"))
         _TabWidget.setTabText(_TabWidget.indexOf(self._mainTab), _translate("TabWidget", "主页"))
 
+        self._serverTableModel.setHorizontalHeaderLabels(["节点名", "地址"])
+        self._addServerButton.setText(_translate("TabWidget", "添加"))
+        self._delServerButton.setText(_translate("TabWidget", "删除"))
+        self._delServerMsgBoxInfo = {"title": "删除节点", "text": "确定要删除这个节点吗？"}
+        self._useServerButton.setText(_translate("TabWidget", "使用节点"))
+        _TabWidget.setTabText(_TabWidget.indexOf(self._serverTableTab), _translate("TabWidget", "节点管理"))
+
     def _setEventsHandle(self):
-        # set tab widget elements event handle
+        # set main tab elements events handle
         self._serverSelectComboBox.currentIndexChanged.connect(self._handle_serverSelectComboBox_selected)
         self._serverManagePushButton.clicked.connect(self._handle_serverManagePushButton_clicked)
         self._groupNameLineEdit.textChanged.connect(self._handle_groupNameLineEdit_changed)
@@ -140,9 +186,15 @@ class UI(object):
         self._localipAutoCheckBox.stateChanged.connect(self._handle_localipAutoCheckBox_changed)
         self._connectionPushButton.clicked.connect(self._handle_connectionPushButton_clicked)
 
-    def setupConfig(self):
+        # set server manage tab elements events handle
+        self._serverTableModel.dataChanged.connect(self._handle_serverTableView_changed)
+        self._addServerButton.clicked.connect(self._handle_addServerButton_clicked)
+        self._delServerButton.clicked.connect(self._handle_delServerButton_clicked)
+        self._useServerButton.clicked.connect(self._handle_useServerButton_clicked)
+
+    def _setupConfig(self):
         self._configTool = ConfigTool("settings.json")
-        self._serverList = {}
+        self._serverList = []
         self._serverSelected = -1
         self._groupName = ""
         self._localIP = ""
@@ -153,40 +205,40 @@ class UI(object):
             try:
                 if jsonobj["servers"] is not None:
                     self._serverList = jsonobj["servers"]
-                profile = jsonobj["profile"]
-                id = profile["server_id"]
-                self._groupName = profile["group_name"]
-                self._localIP = profile["local_ip"]
-                auto_ip = profile["auto_ip"]
-                if re.match('^[a-zA-Z]+$', auto_ip):
-                    if auto_ip.lower() == "yes":
+                _profile = jsonobj["profile"]
+                _id = _profile["server_id"]
+                self._groupName = _profile["group_name"]
+                self._localIP = _profile["local_ip"]
+                _auto_ip = _profile["auto_ip"]
+                if re.match('^[a-zA-Z]+$', _auto_ip):
+                    if _auto_ip.lower() == "yes":
                         self._autoIP = "Yes"
                 for server_pos in range(len(self._serverList)):
                     server = self._serverList[server_pos]
-                    if server["id"] == id:
+                    if server["id"] == _id:
                         self._serverSelected = server_pos
                         break
                 if self._serverSelected == -1:
                     self._serverSelected = 0
 
-                self.Log_connectionTextBrowser("[Info] : 读取配置文件成功。")
+                self.log("[Info] : 读取配置文件成功。")
             except Exception as e:
-                self.Log_connectionTextBrowser("[Error] : 读取配置文件失败，已加载初始化参数。", color="red")
-                self.Log_connectionTextBrowser(e.__str__(), color="red")
+                self.log("[Error] : 读取配置文件失败，已加载初始化参数。", color="red")
+                self.log(e.__str__(), color="red")
                 self._serverList = {}
                 self._serverSelected = None
                 self._groupName = ""
                 self._localIP = ""
 
         elif rst == 1:
-            self.Log_connectionTextBrowser("[Error] : 读取配置文件失败，已加载初始化参数。", color="red")
+            self.log("[Error] : 读取配置文件失败，已加载初始化参数。", color="red")
         elif rst == 2:
-            self.Log_connectionTextBrowser("[Error] : 读取配置文件失败，已加载初始化参数。", color="red")
+            self.log("[Error] : 读取配置文件失败，已加载初始化参数。", color="red")
 
         self._uiFresh()
 
-    def Log_connectionTextBrowser(self, text: str, color: str = "black", margin_top: str = "0px",
-                                  margin_bottom: str = "0px"):
+    def log(self, text: str, color: str = "black", margin_top: str = "0px",
+            margin_bottom: str = "0px"):
         _translate = QtCore.QCoreApplication.translate
         self._connectionMsgTextBrowser.append(_translate("TabWidget",
                                                          f"<p style=\""
@@ -194,8 +246,12 @@ class UI(object):
                                                          f"margin-bottom:\'{margin_bottom}\';"
                                                          f"color:{color};"
                                                          f"\">{text}</p>"))
+        self._connectionMsgTextBrowser.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.IBeamCursor))
 
-    def _saveConfig(self):
+    def log_clear(self):
+        self._connectionMsgTextBrowser.setText("")
+
+    def save_config(self):
         jsonobj = {}
         server_id = ""
         if len(self._serverList) > 0:
@@ -210,17 +266,40 @@ class UI(object):
         self._configTool.saveSettings(jsonobj)
 
     def _uiFresh(self):
+
+        for i in range(len(self._serverList)):
+            _id = self._serverList[i]["id"]
+            if _id == str(self._serverSelected):
+                self._serverSelected = i
+            self._serverList[i]["id"] = str(i)
+
         server_name_list = []
+        server_addr_list = []
         for server in self._serverList:
             server_name_list.append(server["name"])
+            server_addr_list.append(server["address"])
 
         # Clear the server select combobox
         self._serverSelectComboBox.blockSignals(True)
         while self._serverSelectComboBox.count() > 0:
             self._serverSelectComboBox.removeItem(0)
+
         self._serverSelectComboBox.addItems(server_name_list)
         self._serverSelectComboBox.setCurrentIndex(self._serverSelected)
         self._serverSelectComboBox.blockSignals(False)
+
+        self._serverTableModel.blockSignals(True)
+        row_cnt = len(self._serverList)
+        self._serverTableModel.setRowCount(row_cnt)
+        for i in range(row_cnt):
+            index = self._serverTableModel.index(i, 0)
+            self._serverTableModel.setData(index, server_name_list[i])
+            index = self._serverTableModel.index(i, 1)
+            self._serverTableModel.setData(index, server_addr_list[i])
+
+        # self._serverListModel.setStringList(server_name_addr_list)
+        self._serverTableModel.blockSignals(False)
+
         if len(self._serverList) > 0:
             server_address = self._serverList[self._serverSelected]["address"]
         else:
@@ -239,14 +318,14 @@ class UI(object):
             self._localipAutoCheckBox.setChecked(False)
         self._localipAutoCheckBox.blockSignals(False)
 
-        self._saveConfig()
+        self.save_config()
 
     def _handle_serverSelectComboBox_selected(self):
         self._serverSelected = self._serverSelectComboBox.currentIndex()
         self._uiFresh()
 
     def _handle_serverManagePushButton_clicked(self):
-        pass
+        self.log_clear()
 
     def _handle_groupNameLineEdit_changed(self):
         self._groupName = self._groupNameLineEdit.text()
@@ -265,4 +344,48 @@ class UI(object):
         self._uiFresh()
         local_ip = self._localipLineEdit.text()
         self._localipLineEdit.setReadOnly(not self._localipLineEdit.isReadOnly())
-        self.Log_connectionTextBrowser(local_ip)
+        self.log(local_ip)
+
+    def _handle_serverTableView_changed(self, index):
+        _row = index.row()
+        _column = index.column()
+        if _column == 0:
+            self._serverList[_row]["name"] = self._serverTableModel.data(index)
+        elif _column == 1:
+            self._serverList[_row]["address"] = self._serverTableModel.data(index)
+        self.save_config()
+
+    def _handle_addServerButton_clicked(self):
+        _server = {
+            "id": str(len(self._serverList)),
+            "name": "",
+            "address": ""
+        }
+        self._serverList.append(_server)
+        _row = self._serverTableModel.rowCount()
+        self._serverTableModel.setRowCount(_row + 1)
+        self.save_config()
+
+    def _handle_delServerButton_clicked(self):
+        _row = self._serverTableView.currentIndex().row()
+        if _row == -1:
+            return
+        _name = self._serverList[_row]["name"]
+        _addr = self._serverList[_row]["address"]
+        _title = self._delServerMsgBoxInfo["title"]
+        _text = f"{_name}\n{_addr}\n{self._delServerMsgBoxInfo['text']}"
+        msg_box = QtWidgets.QMessageBox()
+        rst = msg_box.warning(self._tabWidget, _title, _text,
+                              QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.Cancel)
+        if rst == QtWidgets.QMessageBox.Yes:
+            self._serverList.pop(_row)
+            self._serverTableModel.removeRow(_row)
+            self._uiFresh()
+
+    def _handle_useServerButton_clicked(self):
+        _row = self._serverTableView.currentIndex().row()
+        if _row == -1:
+            return
+        self._serverSelected = _row
+        self._uiFresh()
+        self._tabWidget.setCurrentIndex(0)
