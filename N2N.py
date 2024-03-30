@@ -2,6 +2,7 @@ import os
 import signal
 import subprocess
 import threading
+import time
 
 
 def _decode(info: bytes):
@@ -16,8 +17,7 @@ def _decode(info: bytes):
 
 
 class N2N(threading.Thread):
-
-    _checkout_ :int = 1
+    _checkout_: int = 1
 
     # n2n edge.exe相关对象
     _N2NPID: int
@@ -25,18 +25,17 @@ class N2N(threading.Thread):
     _groupName: str
     _serverAddr: str
     _localIP: str
-    _history: str
 
     # 同步线程控制
     _listeningCon: threading.Condition
-    # _historyLock: threading.Lock
 
     # 状态
     _isConnecting: bool
     isAlive: bool
 
-    def __init__(self):
+    def __init__(self, ui):
         threading.Thread.__init__(self)
+        self._ui = ui
         self._groupName = ""
         self._serverAddr = ""
         self._localIP = ""
@@ -79,6 +78,7 @@ class N2N(threading.Thread):
                     )
                     self._N2NPID = self._pipe.pid
                 else:
+                    print(f"{self._N2NEXE} -c {self._groupName} -a {self._localIP} -l {self._serverAddr}")
                     self._pipe = subprocess.Popen(
                         f"{self._N2NEXE} -c {self._groupName} -a {self._localIP} -l {self._serverAddr}",
                         stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE
@@ -101,9 +101,11 @@ class N2N(threading.Thread):
             self._pipe = None
 
     def _analyzeLine(self, msg: str):
-        # with self._historyLock:
-        #     self._history += msg
-        print("analyze : "+msg)
+        if msg == "":
+            return
+        self._ui.log_append(msg)
+        time.sleep(0.1)
+        print("analyze : " + msg)
 
     def run(self):
         self._listeningCon.acquire()
@@ -122,7 +124,7 @@ class N2N(threading.Thread):
                     break
                 msg += ch
                 if msg.endswith("\n"):
-                    self._analyzeLine(msg)
+                    self._analyzeLine(msg.replace("\n",""))
                     msg = ""
 
             if self.isAlive:
@@ -132,9 +134,11 @@ class N2N(threading.Thread):
         self._listeningCon.release()
 
     def _knock(self):
+        # 激活正在等待的线程
         with self._listeningCon:
             self._listeningCon.notify()
 
     def _killN2N(self):
+        # 关闭n2n.exe
         if self._N2NPID != 0:
             os.kill(self._N2NPID, signal.SIGTERM)

@@ -67,9 +67,9 @@ class UI(object):
         self._serverTitleLabel = QtWidgets.QLabel(self._serverFrame)
         self._serverTitleLabel.setGeometry(QtCore.QRect(10, 10, 70, 30))
         self._serverTitleLabel.setObjectName("serverTitleLabel")
-        self._serverManagePushButton = QtWidgets.QPushButton(self._serverFrame)
-        self._serverManagePushButton.setGeometry(QtCore.QRect(300, 10, 80, 20))
-        self._serverManagePushButton.setObjectName("serverManagePushButton")
+        self._serverTestPushButton = QtWidgets.QPushButton(self._serverFrame)
+        self._serverTestPushButton.setGeometry(QtCore.QRect(300, 10, 80, 20))
+        self._serverTestPushButton.setObjectName("serverTestPushButton")
         self._groupNameFrame = QtWidgets.QFrame(self._mainTab)
         self._groupNameFrame.setGeometry(QtCore.QRect(10, 100, 390, 50))
         self._groupNameFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -171,7 +171,7 @@ class UI(object):
         _TabWidget.setWindowTitle(_translate("TabWidget", "N2N"))
         self._serverAddressLabel.setText(_translate("TabWidget", ""))
         self._serverTitleLabel.setText(_translate("TabWidget", "服务器节点"))
-        self._serverManagePushButton.setText(_translate("TabWidget", "测试"))
+        self._serverTestPushButton.setText(_translate("TabWidget", "测试"))
         self._groupNameTitleLabel.setText(_translate("TabWidget", "群组名"))
         self._groupNameLineEdit.setText(_translate("TabWidget", ""))
         self._localipTitleLabel.setText(_translate("TabWidget", "本机地址"))
@@ -193,7 +193,7 @@ class UI(object):
     def _setEventsHandle(self):
         # set main tab elements events handle
         self._serverSelectComboBox.currentIndexChanged.connect(self._handle_serverSelectComboBox_selected)
-        self._serverManagePushButton.clicked.connect(self._handle_serverManagePushButton_clicked)
+        self._serverTestPushButton.clicked.connect(self._handle_serverTestPushButton_clicked)
         self._groupNameLineEdit.textChanged.connect(self._handle_groupNameLineEdit_changed)
         self._localipLineEdit.textChanged.connect(self._handle_localipLineEdit_changed)
         self._localipAutoCheckBox.stateChanged.connect(self._handle_localipAutoCheckBox_changed)
@@ -251,14 +251,14 @@ class UI(object):
         self._uiFresh()
 
     def _setupN2N(self):
-        self._n2n = N2N()
+        self._n2n = N2N(self)
         self._setupN2N_config()
         self._n2n.start()
 
     def _setupN2N_config(self):
         _server_addr = self._serverList[self._serverSelected]["address"]
         _group_name = self._groupName
-        _local_ip = self._localIP
+        _local_ip = self._localIP.replace(" ","")
         _auto_ip = False
         if self._autoIP == "Yes":
             _auto_ip = True
@@ -273,7 +273,6 @@ class UI(object):
                                                          f"margin-bottom:\'{margin_bottom}\';"
                                                          f"color:{color};"
                                                          f"\">{text}</p>"))
-        self._connectionMsgTextBrowser.viewport().setProperty("cursor", QtGui.QCursor(QtCore.Qt.IBeamCursor))
 
     def log_clear(self):
         self._connectionMsgTextBrowser.setText("")
@@ -351,8 +350,9 @@ class UI(object):
         self._serverSelected = self._serverSelectComboBox.currentIndex()
         self._uiFresh()
 
-    def _handle_serverManagePushButton_clicked(self):
-        self.log_clear()
+    def _handle_serverTestPushButton_clicked(self):
+        # self.log_append("")
+        pass
 
     def _handle_groupNameLineEdit_changed(self):
         self._groupName = self._groupNameLineEdit.text()
