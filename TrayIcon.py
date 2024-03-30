@@ -92,7 +92,7 @@ class TrayIcon:
         self._mainWindow.activateWindow()
 
     def _handle_trayIcon_exit(self):
-        self._ui.save_config()
+        self._ui.stop()
         QCoreApplication.quit()
 
     def _handle_trayIcon_doConnect(self):

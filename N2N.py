@@ -16,6 +16,9 @@ def _decode(info: bytes):
 
 
 class N2N(threading.Thread):
+
+    _checkout_ :int = 1
+
     # n2n edge.exe相关对象
     _N2NPID: int
     _N2NEXE: str = "N2N/edge.exe"
@@ -26,7 +29,7 @@ class N2N(threading.Thread):
 
     # 同步线程控制
     _listeningCon: threading.Condition
-    _historyLock: threading.Lock
+    # _historyLock: threading.Lock
 
     # 状态
     _isConnecting: bool
@@ -43,7 +46,7 @@ class N2N(threading.Thread):
         self._history = ""
 
         self._listeningCon = threading.Condition()
-        self._historyLock = threading.Lock()
+        # self._historyLock = threading.Lock()
 
         self._isConnecting = False
         self.isAlive = False
@@ -69,11 +72,18 @@ class N2N(threading.Thread):
             return True
         else:
             try:
-                self._pipe = subprocess.Popen(
-                    f"{self._N2NEXE} -c {self._groupName} -a {self._localIP} -l {self._serverAddr}",
-                    stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE
-                )
-                self._N2NPID = self._pipe.pid
+                if self._autoIP:
+                    self._pipe = subprocess.Popen(
+                        f"{self._N2NEXE} -c {self._groupName} -l {self._serverAddr}",
+                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE
+                    )
+                    self._N2NPID = self._pipe.pid
+                else:
+                    self._pipe = subprocess.Popen(
+                        f"{self._N2NEXE} -c {self._groupName} -a {self._localIP} -l {self._serverAddr}",
+                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE
+                    )
+                    self._N2NPID = self._pipe.pid
             except Exception as e:
                 # traceback.print_exc(e)
                 self._pipe = None
@@ -90,36 +100,34 @@ class N2N(threading.Thread):
             self._killN2N()
             self._pipe = None
 
-    def _writeHistory(self, msg: str):
-        with self._historyLock:
-            self._history += msg
-
-    def getHistory(self) -> str:
-        with self._historyLock:
-            ret = self._history
-            self._history = ""
-        return ret
+    def _analyzeLine(self, msg: str):
+        # with self._historyLock:
+        #     self._history += msg
+        print("analyze : "+msg)
 
     def run(self):
         self._listeningCon.acquire()
 
         while self.isAlive:
+            msg = ""
             while self._isConnecting:
                 info = b''
-                msg = ""
                 try:
-                    success, msg = _decode(info)
+                    success, ch = _decode(info)
                     while not success:
                         info = info + self._pipe.stdout.read(1)
-                        success, msg = _decode(info)
+                        success, ch = _decode(info)
                 except Exception as e:
                     # traceback.print_exc(e)
                     break
-                print(msg, end="")
-                self._writeHistory(msg)
+                msg += ch
+                if msg.endswith("\n"):
+                    self._analyzeLine(msg)
+                    msg = ""
 
             if self.isAlive:
-                self._listeningCon.wait(10)
+                self._listeningCon.wait(self._checkout_)
+            print("n2n check")
 
         self._listeningCon.release()
 
