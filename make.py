@@ -6,12 +6,12 @@ except ModuleNotFoundError:
     exit()
 
 os.system("pyinstaller -F -w -i icon/icon256x.ico main.py")
-os.system(r"copy dist\main.exe main.exe")
+os.system(r"copy dist\main.exe n2n-gui.exe")
 
 f = open("start.bat","w")
 f.write('@echo off\n'
         '%1 mshta vbscript:CreateObject("Shell.Application").ShellExecute("cmd.exe","/c %~s0 ::","","runas",1)(window.close)&&exit\n'
         'cd /d "%~dp0"\n'
         '\n'
-        'start main.exe')
+        'start n2n-gui.exe')
 f.close()
