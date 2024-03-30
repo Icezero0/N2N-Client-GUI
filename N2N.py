@@ -71,17 +71,20 @@ class N2N(threading.Thread):
             return True
         else:
             try:
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = subprocess.SW_HIDE
                 if self._autoIP:
                     self._pipe = subprocess.Popen(
                         f"{self._N2NEXE} -c {self._groupName} -l {self._serverAddr}",
-                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE
+                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo
                     )
                     self._N2NPID = self._pipe.pid
                 else:
                     print(f"{self._N2NEXE} -c {self._groupName} -a {self._localIP} -l {self._serverAddr}")
                     self._pipe = subprocess.Popen(
                         f"{self._N2NEXE} -c {self._groupName} -a {self._localIP} -l {self._serverAddr}",
-                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE
+                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo
                     )
                     self._N2NPID = self._pipe.pid
             except Exception as e:
@@ -124,7 +127,7 @@ class N2N(threading.Thread):
                     break
                 msg += ch
                 if msg.endswith("\n"):
-                    self._analyzeLine(msg.replace("\n",""))
+                    self._analyzeLine(msg.replace("\n", ""))
                     msg = ""
 
             if self.isAlive:
