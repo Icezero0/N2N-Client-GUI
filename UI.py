@@ -29,7 +29,7 @@ class UI(object):
     def _setupUi(self):
         self._mainFont = QtGui.QFont()
         self._mainFont.setPointSize(9)
-        self._mainFont.setFamily("SimSun")
+        self._mainFont.setFamily("Arial")
 
         self._tabWidget.setObjectName("TabWidget")
         self._tabWidget.setWindowIcon(QtGui.QIcon("icon/icon.png"))
@@ -40,7 +40,6 @@ class UI(object):
         self._tabWidget.setIconSize(QtCore.QSize(16, 16))
         self._tabWidget.setTabsClosable(False)
         self._tabWidget.setTabBarAutoHide(False)
-        print(self._tabWidget.font().family())
         self._tabWidget.setFont(self._mainFont)
 
         self._setupMainTab()
@@ -74,7 +73,7 @@ class UI(object):
         self._serverTitleLabel.setGeometry(QtCore.QRect(10, 10, 70, 30))
         self._serverTitleLabel.setObjectName("serverTitleLabel")
         self._serverTestPushButton = QtWidgets.QPushButton(self._serverFrame)
-        self._serverTestPushButton.setGeometry(QtCore.QRect(300, 10, 80, 20))
+        self._serverTestPushButton.setGeometry(QtCore.QRect(300, 5, 80, 30))
         self._serverTestPushButton.setObjectName("serverTestPushButton")
         self._groupNameFrame = QtWidgets.QFrame(self._mainTab)
         self._groupNameFrame.setGeometry(QtCore.QRect(10, 100, 390, 50))

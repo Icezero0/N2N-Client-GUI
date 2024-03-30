@@ -125,3 +125,5 @@ test.*
 main_window.ui
 main.exe
 start.py
+start.bat
+n2n-gui.exe

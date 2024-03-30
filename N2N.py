@@ -78,14 +78,16 @@ class N2N(threading.Thread):
                 if self._autoIP:
                     self._pipe = subprocess.Popen(
                         f"{self._N2NEXE} -c {self._groupName} -l {self._serverAddr}",
-                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo
+                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
+                        startupinfo=startupinfo
                     )
                     self._N2NPID = self._pipe.pid
                 else:
                     print(f"{self._N2NEXE} -c {self._groupName} -a {self._localIP} -l {self._serverAddr}")
                     self._pipe = subprocess.Popen(
                         f"{self._N2NEXE} -c {self._groupName} -a {self._localIP} -l {self._serverAddr}",
-                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo
+                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
+                        startupinfo=startupinfo
                     )
                     self._N2NPID = self._pipe.pid
             except Exception as e:
@@ -109,7 +111,7 @@ class N2N(threading.Thread):
             return
         self._ui.log_append(msg)
         time.sleep(0.1)
-        print("analyze : " + msg)
+        print("" + msg)
 
     def run(self):
         self._listeningCon.acquire()
@@ -126,10 +128,11 @@ class N2N(threading.Thread):
                 except Exception as e:
                     # traceback.print_exc(e)
                     break
-                msg += ch
-                if msg.endswith("\n"):
-                    self._analyzeLine(msg.replace("\n", ""))
-                    msg = ""
+                print(ch, end="")
+                # msg += ch
+                # if msg.endswith("\n"):
+                #     self._analyzeLine(msg.replace("\n", ""))
+                #     msg = ""
 
             if self.isAlive:
                 self._listeningCon.wait(self._checkout_)
@@ -146,5 +149,6 @@ class N2N(threading.Thread):
         # 关闭n2n.exe
         if self._N2NPID != 0:
             os.kill(self._N2NPID, signal.SIGTERM)
+            self._N2NPID = 0
         else:
             os.system("taskkill /f /im edge.exe")
