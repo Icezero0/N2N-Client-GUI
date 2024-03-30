@@ -27,6 +27,10 @@ class UI(object):
         self._setupN2N()
 
     def _setupUi(self):
+        self._mainFont = QtGui.QFont()
+        self._mainFont.setPointSize(9)
+        self._mainFont.setFamily("SimSun")
+
         self._tabWidget.setObjectName("TabWidget")
         self._tabWidget.setWindowIcon(QtGui.QIcon("icon/icon.png"))
         self._tabWidget.resize(415, 450)
@@ -36,6 +40,8 @@ class UI(object):
         self._tabWidget.setIconSize(QtCore.QSize(16, 16))
         self._tabWidget.setTabsClosable(False)
         self._tabWidget.setTabBarAutoHide(False)
+        print(self._tabWidget.font().family())
+        self._tabWidget.setFont(self._mainFont)
 
         self._setupMainTab()
         self._setupServerTableTab()
@@ -91,10 +97,10 @@ class UI(object):
         self._localipTitleLabel.setObjectName("localipTitleLabel")
         self._localipLineEdit = QtWidgets.QLineEdit(self._localipFrame)
         self._localipLineEdit.setGeometry(QtCore.QRect(90, 10, 150, 30))
+        self._localipLineEdit.setAlignment(QtCore.Qt.AlignCenter)
         _font = QtGui.QFont()
         _font.setPointSize(10)
         self._localipLineEdit.setFont(_font)
-        self._localipLineEdit.setTextMargins(10, 8, 8, 10)
         self._localipLineEdit.setObjectName("localipLineEdit")
         self._localipAutoCheckBox = QtWidgets.QCheckBox(self._localipFrame)
         self._localipAutoCheckBox.setGeometry(QtCore.QRect(280, 10, 80, 30))

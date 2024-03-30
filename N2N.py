@@ -17,7 +17,7 @@ def _decode(info: bytes):
 
 
 class N2N(threading.Thread):
-    _checkout_: int = 1
+    _checkout_: float = 2
 
     # n2n edge.exe相关对象
     _N2NPID: int
@@ -70,6 +70,7 @@ class N2N(threading.Thread):
         if self._isConnecting:
             return True
         else:
+            self._killN2N()
             try:
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -145,3 +146,5 @@ class N2N(threading.Thread):
         # 关闭n2n.exe
         if self._N2NPID != 0:
             os.kill(self._N2NPID, signal.SIGTERM)
+        else:
+            os.system("taskkill /f /im edge.exe")
